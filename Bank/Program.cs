@@ -1,5 +1,6 @@
 
 using Bank.Data;
+using Bank.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,14 +18,20 @@ namespace Bank
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddDbContext<DataContext>(options =>
+            builder.Services.AddDbContext<Data.DataContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-            builder.Services.AddAuthorization();
+            builder.Services.AddAuthentication()
+                .AddBearerToken(IdentityConstants.BearerScheme);
 
-            builder.Services.AddIdentityApiEndpoints<IdentityUser>()
-                .AddEntityFrameworkStores<DataContext>();
+            builder.Services.AddAuthorizationBuilder();
+            builder.Services.AddIdentityCore<AppUser>()
+                .AddEntityFrameworkStores<DataContext>()
+                .AddApiEndpoints();
 
+  
             var app = builder.Build();
+
+            app.MapIdentityApi<Models.AppUser>(); 
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -33,7 +40,6 @@ namespace Bank
                 app.UseSwaggerUI();
             }
 
-            app.MapIdentityApi<IdentityUser>();
 
             app.UseHttpsRedirection();
 
