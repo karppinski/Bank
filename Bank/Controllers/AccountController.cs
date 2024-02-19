@@ -16,9 +16,23 @@ namespace Bank.Controllers
             _accountRepo = accountRepo;
         }
 
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> GetAll()
+        [HttpGet("GetAllForAdmin")]
+        [Authorize(Roles ="Admin")]
+        public async Task<IActionResult> GetAllForAdmin()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var accounts = await _accountRepo.GetAccounts();
+
+            var accountDto = accounts.Select(a => a.ToAccountDto());
+
+            return Ok(accountDto);
+        }      
+        [HttpGet("GetAllForUser")]
+        [Authorize(Roles ="User")]
+        public async Task<IActionResult> GetAllForUser()
         {
             if (!ModelState.IsValid)
             {

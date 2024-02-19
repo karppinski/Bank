@@ -10,7 +10,7 @@ namespace Bank
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -27,11 +27,15 @@ namespace Bank
             builder.Services.AddScoped<IAccountRepository, AccountRepository>();
             builder.Services.AddAuthorizationBuilder();
             builder.Services.AddIdentityCore<AppUser>()
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<DataContext>()
+      
                 .AddApiEndpoints();
-
   
+
+
             var app = builder.Build();
+
 
             app.MapIdentityApi<Models.AppUser>(); 
 
@@ -50,7 +54,41 @@ namespace Bank
 
             app.MapControllers();
 
-            app.Run();
+            using(var scope = app.Services.CreateScope())
+            {
+                var roleManager =
+                    scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+                var roles = new[] { "Admin", "User" };
+
+                foreach (var role in roles) 
+                {
+                    if (!await roleManager.RoleExistsAsync(role))
+                        await roleManager.CreateAsync(new IdentityRole(role));
+                }
+            }
+
+            //using (var scope = app.Services.CreateScope())
+            //{
+            //    var userManager =
+            //        scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+            //    string email = "admin@admin.com";
+            //    string password = "P@ssword_111";
+
+            //    if(await userManager.FindByEmailAsync(email) == null)
+            //    {
+            //        var user = new IdentityUser();
+            //        user.UserName = email;
+            //        user.Email = email;
+
+            //        await userManager.CreateAsync(user, password);
+
+            //        await userManager.AddToRoleAsync(user, "Admin");
+            //    }
+            //}
+
+                app.Run();
         }
     }
 }
