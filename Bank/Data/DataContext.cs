@@ -10,5 +10,8 @@ namespace Bank.Data
         {
             
         }
-    }
+
+       public DbSet<Account> Accounts { get; set; }
+
+        }
 }

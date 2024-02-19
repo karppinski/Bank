@@ -1,6 +1,8 @@
 
 using Bank.Data;
+using Bank.Interfaces;
 using Bank.Models;
+using Bank.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,11 +20,11 @@ namespace Bank
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddDbContext<Data.DataContext>(options =>
+            builder.Services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddAuthentication()
                 .AddBearerToken(IdentityConstants.BearerScheme);
-
+            builder.Services.AddScoped<IAccountRepository, AccountRepository>();
             builder.Services.AddAuthorizationBuilder();
             builder.Services.AddIdentityCore<AppUser>()
                 .AddEntityFrameworkStores<DataContext>()
