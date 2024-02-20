@@ -7,6 +7,7 @@ namespace Bank.Interfaces
     {
         Task<List<Account>> GetAccounts();
         Task<List<Account>> GetAccountsForAnUser(string id);
-        Task<Account> CreateAccount()
+        Task<Account> GetUserAccountWithId(string userId, int accountId);
+      //  Task<Account> CreateAccount()
     }
 }

@@ -34,5 +34,13 @@ namespace Bank.Repositories
 
         }
 
+        public async Task<Account> GetUserAccountWithId(string userId, int accountId)
+        {
+           var account = await _context.Accounts
+                                        .Include(a => a.AppUser)
+                                        .FirstOrDefaultAsync(a => a.AppUserId == userId && a.AccountId == accountId);
+
+            return account;
+        }
     }
 }
