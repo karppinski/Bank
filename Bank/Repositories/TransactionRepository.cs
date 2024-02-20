@@ -23,7 +23,7 @@ namespace Bank.Repositories
         public async Task<Transaction> Deposit(DepositDto depositDto)
         {
             var account = await _context.Accounts.FindAsync(depositDto.AccountId);
-            if (account == null) return null;
+            if (account == null) throw new Exception("Account not found");
 
             account.Balance += depositDto.Amount;
 
@@ -46,19 +46,73 @@ namespace Bank.Repositories
         public async Task<Transaction> GetTransactionById(int transactionId)
         {
             var transaction = await _context.Transactions.FindAsync(transactionId);
-            if (transaction == null) return null;
+            if (transaction == null) throw new Exception("Transaction not found");
 
             return transaction;
         }
 
-        public Task<Transaction> Transfer(int fomAccountId, int toAccountId, decimal amount)
+        public async Task<IEnumerable<Transaction>> Transfer(TransferDto transferDto)
         {
-            throw new NotImplementedException();
+            var fromAcc = await _context.Accounts.FindAsync(transferDto.FromAccountId);
+            var toAcc = await _context.Accounts.FindAsync(transferDto.ToAccountId);
+
+            if(fromAcc == null || toAcc == null)
+            {
+                throw new Exception("One or both accounts are invalid");   
+            }
+    
+            if (fromAcc.Balance < transferDto.Amount)
+            {
+                throw new Exception("Insufficient funds for the transfer");
+            }
+            var toTransaction = new Transaction
+            {
+                AccountId = transferDto.ToAccountId,
+                Amount = transferDto.Amount,
+                Type = TransactionType.Transfer,
+                TimeStamp = DateTime.Now
+            };
+
+            var fromTransaction = new Transaction
+            {
+                AccountId = transferDto.FromAccountId,
+                Amount = -transferDto.Amount,
+                Type = TransactionType.Transfer,
+                TimeStamp = DateTime.Now
+            };
+
+            fromAcc.Balance -= transferDto.Amount;
+            toAcc.Balance += transferDto.Amount;
+
+            _context.Transactions.Add(toTransaction);
+            _context.Transactions.Add(fromTransaction);
+
+            await _context.SaveChangesAsync();
+            var transactions = new List<Transaction> {fromTransaction, toTransaction };
+
+            return transactions;
+
         }
 
-        public Task<Transaction> Withdraw(int accountId, decimal amount)
+        public async Task<Transaction> Withdraw(WithdrawDto withdrawDto)
         {
-            throw new NotImplementedException();
+            var account = await _context.Accounts.FindAsync(withdrawDto.AccountId);
+            if (account == null) throw new Exception("Account not found");
+
+            account.Balance -= withdrawDto.Amount;
+
+            var withdrawLog = new Transaction
+            {
+                AccountId = withdrawDto.AccountId,
+                Amount = withdrawDto.Amount,
+                Type = TransactionType.Withdraw,
+                TimeStamp = DateTime.Now
+            };
+
+            _context.Transactions.Add(withdrawLog);
+            await _context.SaveChangesAsync();
+
+            return withdrawLog;
         }
     }
 }
