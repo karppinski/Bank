@@ -9,7 +9,8 @@ namespace Bank.Mappers
         {
             return new AccountDto
             {
-                FullName = accountModel.FullName,
+                AccountId = accountModel.AccountId,
+                FullName = accountModel.AppUser.FullName,
                 Balance = accountModel.Balance
             };
         }
