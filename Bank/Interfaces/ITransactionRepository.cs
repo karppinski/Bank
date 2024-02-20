@@ -1,4 +1,4 @@
-﻿using Bank.Dtos.Account;
+﻿using Bank.Dtos.Transaction;
 using Bank.Models;
 namespace Bank.Interfaces
 {

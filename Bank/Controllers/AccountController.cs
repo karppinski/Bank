@@ -2,6 +2,7 @@
 using Bank.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Bank.Controllers
 {
@@ -38,7 +39,16 @@ namespace Bank.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var accounts = await _accountRepo.GetAccounts();
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User id not found in the token");
+            }
+
+            var userId = userIdClaim.Value;
+
+            var accounts = await _accountRepo.GetAccountsForAnUser(userId);
 
             var accountDto = accounts.Select(a => a.ToAccountDto());
 

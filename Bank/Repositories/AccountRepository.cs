@@ -1,4 +1,5 @@
 ﻿using Bank.Data;
+using Bank.Dtos.Account;
 using Bank.Interfaces;
 using Bank.Models;
 using Microsoft.EntityFrameworkCore;
@@ -21,5 +22,17 @@ namespace Bank.Repositories
 
             return accounts;
         }
+
+        public async Task<List<Account>> GetAccountsForAnUser(string id)
+        {
+            var accounts = await _context.Accounts.Where(a => a.AppUserId == id)
+                                                  .Include(a => a.AppUser)
+                                                  .ToListAsync();
+
+
+            return accounts;
+
+        }
+
     }
 }

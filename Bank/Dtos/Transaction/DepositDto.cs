@@ -1,4 +1,4 @@
-﻿namespace Bank.Dtos.Account
+﻿namespace Bank.Dtos.Transaction
 {
     public class DepositDto
     {

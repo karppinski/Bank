@@ -1,5 +1,5 @@
 ﻿using Bank.Data;
-using Bank.Dtos.Account;
+using Bank.Dtos.Transaction;
 using Bank.Interfaces;
 using Bank.Mappers;
 using Bank.Models;
