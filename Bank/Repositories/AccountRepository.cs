@@ -10,16 +10,20 @@ namespace Bank.Repositories
     {
         private readonly DataContext _context;
 
-        public AccountRepository(DataContext context)
+        public AccountRepository(DataContext context )
         {
             _context = context;
+ 
         }
 
         public async Task<Account> CreateAccount(string userId)
         {
+            var user = await _context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
+
             var newAccount = new Account
             {
                 AppUserId = userId,
+                AppUser = user,
                 Balance = 0
             };
 

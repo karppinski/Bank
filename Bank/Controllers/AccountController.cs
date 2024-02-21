@@ -83,9 +83,30 @@ namespace Bank.Controllers
             var accountDto = account.ToAccountDto();
 
             return Ok(accountDto);
-
-
-
         }
+
+        [HttpPost("CreateAccount")]
+        [Authorize(Roles ="User")]
+        public async Task<IActionResult> CreateAccount()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User id not found in the token");
+            }
+
+            var userId = userIdClaim.Value;
+
+            var newAccount = await _accountRepo.CreateAccount(userId);
+            var accountDto = newAccount.ToAccountDto();
+
+            return Ok(accountDto);
+        }
+
     }
 }

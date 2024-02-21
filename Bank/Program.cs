@@ -25,6 +25,8 @@ namespace Bank
             builder.Services.AddAuthentication()
                 .AddBearerToken(IdentityConstants.BearerScheme);
             builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+            builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddAuthorizationBuilder();
             builder.Services.AddIdentityCore<AppUser>()
                 .AddRoles<IdentityRole>()
