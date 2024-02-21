@@ -1,5 +1,6 @@
 ﻿using Bank.Interfaces;
 using Bank.Mappers;
+using Bank.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.Metrics;
@@ -12,42 +13,40 @@ namespace Bank.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountRepository _accountRepo;
+        private readonly IUserRepository _userRepo;
+        private readonly ITokenService _tokenService;
 
-        public AccountController(IAccountRepository accountRepo)
+        public AccountController(IAccountRepository accountRepo, IUserRepository userRepo, ITokenService tokenService)
         {
             _accountRepo = accountRepo;
+            _userRepo = userRepo;
+            _tokenService = tokenService;
         }
 
-        [HttpGet("GetAllForAnAdmin")]
-        [Authorize(Roles ="Admin")]
-        public async Task<IActionResult> GetAllForAnAdmin()
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var accounts = await _accountRepo.GetAccounts();
+        //[HttpGet("GetAllForAnAdmin")]
+        //[Authorize(Roles ="Admin")]
+        //public async Task<IActionResult> GetAllForAnAdmin()
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+        //    var accounts = await _accountRepo.GetAccounts();
 
-            var accountDto = accounts.Select(a => a.ToAccountDto());
+        //    var accountDto = accounts.Select(a => a.ToAccountDto());
 
-            return Ok(accountDto);
-        }      
+        //    return Ok(accountDto);
+        //}      
         [HttpGet("GetAllForAnUser")]
-        [Authorize(Roles ="User")]
         public async Task<IActionResult> GetAllForAnUser()
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null)
+            var canAcces = await _tokenService.UserCanAccess(User, _accountRepo);
+            if (!canAcces)
             {
-                return Unauthorized("User id not found in the token");
+                return Unauthorized("You can access only your account! ");
             }
-
-            var userId = userIdClaim.Value;
+            var userId =  _tokenService.GetUserIdFromClaims(User);
 
             var accounts = await _accountRepo.GetAccountsForAnUser(userId);
 
@@ -60,24 +59,17 @@ namespace Bank.Controllers
         [Authorize(Roles = "User")]
         public async Task<IActionResult> GetAccountForAnUser(int id)
         {
-            if (!ModelState.IsValid)
+            var canAcces = await _tokenService.UserCanAccess(User, _accountRepo);
+            if (!canAcces)
             {
-                return BadRequest(ModelState);
+                return Unauthorized("You can access only your account! ");
             }
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if(userIdClaim == null) 
-            {
-                 return Unauthorized("User id not found in the token");
-            }
-            
-            var userId = userIdClaim.Value;
+            var account = await _accountRepo.GetUserAccountWithId(_tokenService.GetUserIdFromClaims(User), id);
 
-            var account = await _accountRepo.GetUserAccountWithId(userId, id);
-
-            if(account == null)
+            if (account == null)
             {
-                return Unauthorized("You can access only your account");
+                return NotFound("Account not found.");
             }
 
             var accountDto = account.ToAccountDto();
@@ -89,15 +81,16 @@ namespace Bank.Controllers
         [Authorize(Roles ="User")]
         public async Task<IActionResult> CreateAccount()
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+          
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null)
             {
                 return Unauthorized("User id not found in the token");
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
             }
 
             var userId = userIdClaim.Value;
@@ -106,6 +99,48 @@ namespace Bank.Controllers
             var accountDto = newAccount.ToAccountDto();
 
             return Ok(accountDto);
+        }
+
+        [HttpDelete("deleteOne/{id}")]
+        [Authorize(Roles ="User")]
+        public async Task<IActionResult> DeleteAccount(int id)
+        {
+            var canAcces = await _tokenService.UserCanAccess(User, _accountRepo);
+            if (!canAcces)
+            {
+                return Unauthorized("You can access only your account! ");
+            }
+
+            await _accountRepo.DeleteAccountById(id);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            return NoContent();
+        }
+
+        [HttpDelete("deleteAll/{userId}")]
+        [Authorize(Roles ="User")]
+        public async Task<IActionResult> DeleteAllAccounts()
+        {
+            var canAcces = await _tokenService.UserCanAccess(User, ;
+            if (!canAcces)
+            {
+                return Unauthorized("You can access only your account! ");
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = _tokenService.GetUserIdFromClaims(User);
+       
+
+            await _accountRepo.DeleteAccountsForUserId(userId);
+
+        
+            return NoContent();
         }
 
     }

@@ -3,6 +3,7 @@ using Bank.Data;
 using Bank.Interfaces;
 using Bank.Models;
 using Bank.Repositories;
+using Bank.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +28,7 @@ namespace Bank
             builder.Services.AddScoped<IAccountRepository, AccountRepository>();
             builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddAuthorizationBuilder();
             builder.Services.AddIdentityCore<AppUser>()
                 .AddRoles<IdentityRole>()

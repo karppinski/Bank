@@ -76,6 +76,14 @@ namespace Bank.Repositories
 
         }
 
+        public async Task<Account> GetAccountWithId(int id)
+        {
+            var account = await _context.Accounts.Where(a => a.AccountId == id).FirstOrDefaultAsync();
+
+            return account;
+
+        }
+
         public async Task<Account> GetUserAccountWithId(string userId, int accountId)
         {
            var account = await _context.Accounts
