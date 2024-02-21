@@ -3,6 +3,7 @@ using Bank.Dtos.Transaction;
 using Bank.Interfaces;
 using Bank.Mappers;
 using Bank.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using System.Security.Principal;
 using System.Transactions;
@@ -19,7 +20,33 @@ namespace Bank.Repositories
             _context = context;
         }
 
-   
+        public async Task DeleteTransactionsByAccountId(int accountId)
+        {
+            var transactions = await _context.Transactions
+                                             .Where(a => a.AccountId == accountId)
+                                             .ToListAsync();
+
+            if(transactions != null && transactions.Count > 0)
+            {
+                _context.Transactions.RemoveRange(transactions);
+                await _context.SaveChangesAsync(); 
+            }
+        }
+
+        public async Task DeleteTransactionsByUserId(string userId)
+        {
+            var transactions = await _context.Transactions
+                                             .Where(t => _context.Accounts.Any(a => a.AppUserId == userId && a.AccountId == t.AccountId))
+                                             .ToListAsync();
+
+            if (transactions != null && transactions.Count > 0)
+            {
+                _context.Transactions.RemoveRange(transactions);
+                await _context.SaveChangesAsync();
+            }
+
+        }
+
         public async Task<Transaction> Deposit(DepositDto depositDto)
         {
             var account = await _context.Accounts.FindAsync(depositDto.AccountId);
@@ -41,6 +68,25 @@ namespace Bank.Repositories
             return depositLog;
             
                           
+        }
+
+    
+        public async Task<List<Transaction>> GetAllTransactionsForAnAccount(int accId)
+        {
+            var transactions = await _context.Transactions.Where(a => a.AccountId == accId).ToListAsync();
+
+            return transactions;
+        }
+
+        public async Task<List<Transaction>> GetAllTransactionsForAnUser(string userId)
+        {
+            var transactions = await _context.Users
+                .Where(u => u.Id == userId)
+                .SelectMany(u => u.Accounts)
+                .SelectMany(t => t.Transactions)
+                .ToListAsync();
+
+            return transactions;
         }
 
         public async Task<Transaction> GetTransactionById(int transactionId)

@@ -75,6 +75,11 @@ namespace Bank.Controllers
 
             var account = await _accountRepo.GetUserAccountWithId(userId, id);
 
+            if(account == null)
+            {
+                return Unauthorized("You can access only your account");
+            }
+
             var accountDto = account.ToAccountDto();
 
             return Ok(accountDto);

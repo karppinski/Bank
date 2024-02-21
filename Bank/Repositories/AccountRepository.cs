@@ -15,7 +15,45 @@ namespace Bank.Repositories
             _context = context;
         }
 
-    
+        public async Task<Account> CreateAccount(string userId)
+        {
+            var newAccount = new Account
+            {
+                AppUserId = userId,
+                Balance = 0
+            };
+
+            _context.Accounts.Add(newAccount);
+            await _context.SaveChangesAsync();
+
+            return newAccount;
+        }
+
+        public async Task DeleteAccountById(int id)
+        {
+            var accountToDelete = await _context.Accounts.FindAsync(id);
+            if(accountToDelete == null)
+            {
+                throw new Exception("Account not found");
+            }
+
+            _context.Accounts.Remove(accountToDelete);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAccountsForUserId(string userId)
+        {
+            var accounts = await _context.Accounts
+                          .Where(u => u.AppUserId == userId)
+                          .ToListAsync();
+
+            if(accounts != null && accounts.Count > 0)
+            {
+                _context.RemoveRange(accounts);
+                await _context.SaveChangesAsync();
+            }
+        }
+
         public async Task<List<Account>> GetAccounts()
         {
             var accounts = await _context.Accounts.ToListAsync();
