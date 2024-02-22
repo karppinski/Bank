@@ -3,7 +3,6 @@ using Bank.Mappers;
 using Bank.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics.Metrics;
 using System.Security.Claims;
 
 namespace Bank.Controllers
@@ -13,13 +12,11 @@ namespace Bank.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountRepository _accountRepo;
-        private readonly IUserRepository _userRepo;
         private readonly ITokenService _tokenService;
 
-        public AccountController(IAccountRepository accountRepo, IUserRepository userRepo, ITokenService tokenService)
+        public AccountController(IAccountRepository accountRepo, ITokenService tokenService)
         {
             _accountRepo = accountRepo;
-            _userRepo = userRepo;
             _tokenService = tokenService;
         }
 
@@ -41,8 +38,8 @@ namespace Bank.Controllers
         public async Task<IActionResult> GetAllForAnUser(string id)
         {
 
-            var canAcces =  _tokenService.UserCanAccessUser(User, id);
-            if (!canAcces)
+            var canAccess =  _tokenService.UserCanAccessUser(User, id);
+            if (!canAccess)
             {
                 return Unauthorized("You can access only your account! ");
             }
@@ -58,8 +55,8 @@ namespace Bank.Controllers
         [HttpGet("account/{id}")]
             public async Task<IActionResult> GetAccountById(int id)
         {
-            var canAcces = await _tokenService.UserCanAccessAccount(User, id);
-            if (!canAcces)
+            var canAccess = await _tokenService.UserCanAccessAccount(User, id);
+            if (!canAccess)
             {
                 return Unauthorized("You can access only your account! ");
             }
@@ -77,7 +74,6 @@ namespace Bank.Controllers
         }
 
         [HttpPost("CreateAccount")]
-        [Authorize(Roles ="User")]
         public async Task<IActionResult> CreateAccount()
         {
           
@@ -104,8 +100,8 @@ namespace Bank.Controllers
         [Authorize(Roles ="User")]
         public async Task<IActionResult> DeleteAccount(int id)
         {
-            var canAcces = await _tokenService.UserCanAccessAccount(User, id);
-            if (!canAcces)
+            var canAccess = await _tokenService.UserCanAccessAccount(User, id);
+            if (!canAccess)
             {
                 return Unauthorized("You can access only your account! ");
             }
@@ -122,8 +118,8 @@ namespace Bank.Controllers
         [HttpDelete("deleteAll/{id}")]
         public async Task<IActionResult> DeleteAllAccounts(string id)
         {
-            var canAcces =  _tokenService.UserCanAccessUser(User, id);
-            if (!canAcces)
+            var canAccess =  _tokenService.UserCanAccessUser(User, id);
+            if (!canAccess)
             {
                 return Unauthorized("You can access only your account! ");
             }

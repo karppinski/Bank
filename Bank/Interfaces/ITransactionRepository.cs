@@ -4,6 +4,7 @@ namespace Bank.Interfaces
 {
     public interface ITransactionRepository
     {
+        Task<List<Transaction>> GetAllTransactions();
         Task<List<Transaction>> GetAllTransactionsForAnAccount(int accId);
         Task<List<Transaction>> GetAllTransactionsForAnUser(string userId);
         Task<Transaction> Deposit(DepositDto depositDto);

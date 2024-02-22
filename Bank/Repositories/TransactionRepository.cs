@@ -55,7 +55,7 @@ namespace Bank.Repositories
             account.Balance += depositDto.Amount;
 
             var depositLog = new Transaction
-            {
+            {//tutaj account jest nullem
                 AccountId = depositDto.AccountId,
                 Amount = depositDto.Amount,
                 Type = TransactionType.Deposit,
@@ -70,7 +70,13 @@ namespace Bank.Repositories
                           
         }
 
-    
+        public async Task<List<Transaction>> GetAllTransactions()
+        {
+            var transactions = await _context.Transactions.ToListAsync();
+
+            return transactions;
+        }
+
         public async Task<List<Transaction>> GetAllTransactionsForAnAccount(int accId)
         {
             var transactions = await _context.Transactions.Where(a => a.AccountId == accId).ToListAsync();
