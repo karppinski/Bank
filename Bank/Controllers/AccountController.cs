@@ -23,25 +23,25 @@ namespace Bank.Controllers
             _tokenService = tokenService;
         }
 
-        //[HttpGet("GetAllForAnAdmin")]
-        //[Authorize(Roles ="Admin")]
-        //public async Task<IActionResult> GetAllForAnAdmin()
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //    var accounts = await _accountRepo.GetAccounts();
+        [HttpGet("GetAllForAnAdmin")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllForAnAdmin()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var accounts = await _accountRepo.GetAccounts();
 
-        //    var accountDto = accounts.Select(a => a.ToAccountDto());
+            var accountDto = accounts.Select(a => a.ToAccountDto());
 
-        //    return Ok(accountDto);
-        //}      
-        [HttpGet("GetAllForAnUser")]
-        public async Task<IActionResult> GetAllForAnUser()
+            return Ok(accountDto);
+        }
+        [HttpGet("UserAccounts/{id}")]
+        public async Task<IActionResult> GetAllForAnUser(string id)
         {
 
-            var canAcces = await _tokenService.UserCanAccess(User, _accountRepo);
+            var canAcces =  _tokenService.UserCanAccessUser(User, id);
             if (!canAcces)
             {
                 return Unauthorized("You can access only your account! ");
@@ -55,17 +55,16 @@ namespace Bank.Controllers
             return Ok(accountDto);
         }
 
-        [HttpGet("{id}")]
-        [Authorize(Roles = "User")]
-        public async Task<IActionResult> GetAccountForAnUser(int id)
+        [HttpGet("account/{id}")]
+            public async Task<IActionResult> GetAccountById(int id)
         {
-            var canAcces = await _tokenService.UserCanAccess(User, _accountRepo);
+            var canAcces = await _tokenService.UserCanAccessAccount(User, id);
             if (!canAcces)
             {
                 return Unauthorized("You can access only your account! ");
             }
 
-            var account = await _accountRepo.GetUserAccountWithId(_tokenService.GetUserIdFromClaims(User), id);
+            var account = await _accountRepo.GetAccountWithId(id);
 
             if (account == null)
             {
@@ -105,7 +104,7 @@ namespace Bank.Controllers
         [Authorize(Roles ="User")]
         public async Task<IActionResult> DeleteAccount(int id)
         {
-            var canAcces = await _tokenService.UserCanAccess(User, _accountRepo);
+            var canAcces = await _tokenService.UserCanAccessAccount(User, id);
             if (!canAcces)
             {
                 return Unauthorized("You can access only your account! ");
@@ -120,11 +119,10 @@ namespace Bank.Controllers
             return NoContent();
         }
 
-        [HttpDelete("deleteAll/{userId}")]
-        [Authorize(Roles ="User")]
-        public async Task<IActionResult> DeleteAllAccounts()
+        [HttpDelete("deleteAll/{id}")]
+        public async Task<IActionResult> DeleteAllAccounts(string id)
         {
-            var canAcces = await _tokenService.UserCanAccess(User, ;
+            var canAcces =  _tokenService.UserCanAccessUser(User, id);
             if (!canAcces)
             {
                 return Unauthorized("You can access only your account! ");

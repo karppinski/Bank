@@ -60,7 +60,7 @@ namespace Bank.Repositories
 
         public async Task<List<Account>> GetAccounts()
         {
-            var accounts = await _context.Accounts.ToListAsync();
+            var accounts = await _context.Accounts.Include(a => a.AppUser).ToListAsync();
 
             return accounts;
         }
@@ -78,7 +78,7 @@ namespace Bank.Repositories
 
         public async Task<Account> GetAccountWithId(int id)
         {
-            var account = await _context.Accounts.Where(a => a.AccountId == id).FirstOrDefaultAsync();
+            var account = await _context.Accounts.Where(a => a.AccountId == id).Include(a => a.AppUser).FirstOrDefaultAsync();
 
             return account;
 
