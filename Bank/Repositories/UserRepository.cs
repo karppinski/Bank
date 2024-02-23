@@ -3,6 +3,7 @@ using Bank.Dtos.User;
 using Bank.Interfaces;
 using Bank.Mappers;
 using Bank.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bank.Repositories
@@ -11,13 +12,18 @@ namespace Bank.Repositories
     {
         private readonly DataContext _context;
         private readonly IAccountRepository _accountRepo;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
         private readonly ITransactionRepository _transactionRepo;
 
-        public UserRepository(DataContext context, IAccountRepository accountRepo, ITransactionRepository transactionRepo)
+        public UserRepository(DataContext context, IAccountRepository accountRepo, ITransactionRepository transactionRepo,
+            UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
         {
             _context = context;
             _accountRepo = accountRepo;
             _transactionRepo = transactionRepo;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         public async Task<AppUser> CreateUser(CreateUserDto userDto)
@@ -26,10 +32,11 @@ namespace Bank.Repositories
             {
                 FullName = userDto.FullName,
                 DateOfBirth = userDto.DateOfBirth,
-                UserName = userDto.FullName.Replace(" ", "") + DateTime.Now.Ticks
+                UserName = userDto.FullName.Replace(" ", ""),
+                Email = userDto.Email,
             };
 
-            await _context.Users.AddAsync(newUser);
+            await _userManager.CreateAsync(newUser, userDto.Password);
 
             await _context.SaveChangesAsync();
 

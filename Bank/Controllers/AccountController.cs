@@ -13,11 +13,13 @@ namespace Bank.Controllers
     {
         private readonly IAccountRepository _accountRepo;
         private readonly ITokenService _tokenService;
+        private readonly ITransactionRepository _transactionRepo;
 
-        public AccountController(IAccountRepository accountRepo, ITokenService tokenService)
+        public AccountController(IAccountRepository accountRepo, ITokenService tokenService, ITransactionRepository transactionRepo)
         {
             _accountRepo = accountRepo;
             _tokenService = tokenService;
+            _transactionRepo = transactionRepo;
         }
 
         [HttpGet("GetAllForAnAdmin")]
@@ -106,6 +108,7 @@ namespace Bank.Controllers
                 return Unauthorized("You can access only your account! ");
             }
 
+            await _transactionRepo.DeleteTransactionsByAccountId(id);
             await _accountRepo.DeleteAccountById(id);
 
             if (!ModelState.IsValid)
@@ -129,8 +132,8 @@ namespace Bank.Controllers
             }
 
             var userId = _tokenService.GetUserIdFromClaims(User);
-       
 
+            await _transactionRepo.DeleteTransactionsByUserId(userId);
             await _accountRepo.DeleteAccountsForUserId(userId);
 
         
