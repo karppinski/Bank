@@ -97,13 +97,14 @@ namespace Bank.Repositories
 
         public async Task<Transaction> GetTransactionById(int transactionId)
         {
-            var transaction = await _context.Transactions.FindAsync(transactionId);
-            if (transaction == null) throw new Exception("Transaction not found");
+            var transaction = await _context.Transactions.Include(t => t.Account)
+                                                          .FirstOrDefaultAsync(t => t.TransactionId == transactionId);
+            if (transaction == null) throw new Exception("Transaction not found");//account jest tutaj nullem
 
             return transaction;
         }
 
-        public async Task<IEnumerable<Transaction>> Transfer(TransferDto transferDto)
+        public async Task<List<Transaction>> Transfer(TransferDto transferDto)
         {
             var fromAcc = await _context.Accounts.FindAsync(transferDto.FromAccountId);
             var toAcc = await _context.Accounts.FindAsync(transferDto.ToAccountId);

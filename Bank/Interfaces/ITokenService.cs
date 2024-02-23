@@ -7,6 +7,7 @@ namespace Bank.Interfaces
         string GetUserIdFromClaims (ClaimsPrincipal user);
         Task<bool> UserCanAccessAccount(ClaimsPrincipal user, int id);
         bool UserCanAccessUser(ClaimsPrincipal user, string userIdFromRoute);
+        Task<bool> UserCanAccesTransaction(ClaimsPrincipal user, int id);
 
     }
 }

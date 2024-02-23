@@ -15,5 +15,24 @@ namespace Bank.Mappers
                 TimeStamp = transactionModel.TimeStamp
             };
         }
+        public static List<TransactionDto> ToTransactionDtos(this List<Transaction> transactions)
+        {
+            var transactionDtos = new List<TransactionDto>();
+
+            foreach(Transaction t in transactions)
+            {
+                transactionDtos.Add(
+
+               new TransactionDto
+               {
+                   AccountId = t.AccountId,
+                   Amount = t.Amount,
+                   Type = t.Type,
+                   TimeStamp = t.TimeStamp
+               });
+            }
+            return transactionDtos;
+
+        }
     }
 }

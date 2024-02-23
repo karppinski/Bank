@@ -9,7 +9,7 @@ namespace Bank.Interfaces
         Task<List<Transaction>> GetAllTransactionsForAnUser(string userId);
         Task<Transaction> Deposit(DepositDto depositDto);
         Task<Transaction> Withdraw(WithdrawDto withdrawDto);
-        Task<IEnumerable<Transaction>> Transfer(TransferDto transferDto);
+        Task<List<Transaction>> Transfer(TransferDto transferDto);
         Task<Transaction> GetTransactionById(int transactionId);
         Task DeleteTransactionsByAccountId(int accountId);
         Task DeleteTransactionsByUserId(string userId);

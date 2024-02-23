@@ -6,9 +6,11 @@ namespace Bank.Services
     public class TokenService : ITokenService
     {
         private readonly IAccountRepository _accountRepo;
-        public TokenService(IAccountRepository accountRepo)
+        private readonly ITransactionRepository _transactionRepo;
+        public TokenService(IAccountRepository accountRepo, ITransactionRepository transactionRepo)
         {
             _accountRepo = accountRepo;
+            _transactionRepo = transactionRepo;
         }
         public string GetUserIdFromClaims(ClaimsPrincipal user)
         {
@@ -36,6 +38,19 @@ namespace Bank.Services
 
           
             return userId == userIdFromRoute || userId == adminId;
+        }
+        public async Task<bool> UserCanAccesTransaction(ClaimsPrincipal user, int id)
+        {
+            var userId = GetUserIdFromClaims(user);
+            var transaction = await _transactionRepo.GetTransactionById(id);
+
+            const string adminId = "fa55ceee-04bf-4164-a97d-b3dfdccc5fce";
+            if (transaction == null)
+            {
+                return false;
+            }
+           
+            return transaction.Account.AppUserId == userId || userId == adminId;
         }
 
     }
