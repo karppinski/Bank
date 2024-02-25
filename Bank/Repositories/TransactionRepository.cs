@@ -55,7 +55,7 @@ namespace Bank.Repositories
             account.Balance += depositDto.Amount;
 
             var depositLog = new Transaction
-            {//tutaj account jest nullem
+            {
                 AccountId = depositDto.AccountId,
                 Amount = depositDto.Amount,
                 Type = TransactionType.Deposit,
