@@ -9,11 +9,12 @@ namespace Bank.Repositories
     public class AccountRepository : IAccountRepository
     {
         private readonly DataContext _context;
+        private readonly ICacheService _cacheService;
 
-        public AccountRepository(DataContext context )
+        public AccountRepository(DataContext context, ICacheService cacheService)
         {
             _context = context;
- 
+            _cacheService = cacheService;
         }
 
         public async Task<Account> CreateAccount(string userId)
@@ -60,7 +61,10 @@ namespace Bank.Repositories
 
         public async Task<List<Account>> GetAccounts()
         {
-            var accounts = await _context.Accounts.Include(a => a.AppUser).ToListAsync();
+            var accounts = await _cacheService.GetOrSetAsync<List<Account>>(
+            "accountsCacheKey",
+            async () => await _context.Accounts.Include(a => a.AppUser).ToListAsync(),
+            TimeSpan.FromMinutes(5));
 
             return accounts;
         }
