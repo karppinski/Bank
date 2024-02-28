@@ -21,6 +21,11 @@ namespace Bank.Repositories
         {
             var user = await _context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
 
+            if (user.DateOfBirth.Year - DateTime.Now.Year < 18)
+            {
+                throw new Exception("You must be over 18 years to create an account.");
+            }
+
             var newAccount = new Account
             {
                 AppUserId = userId,
@@ -61,12 +66,28 @@ namespace Bank.Repositories
 
         public async Task<List<Account>> GetAccounts()
         {
-            var accounts = await _cacheService.GetOrSetAsync<List<Account>>(
-            "accountsCacheKey",
-            async () => await _context.Accounts.Include(a => a.AppUser).ToListAsync(),
-            TimeSpan.FromMinutes(5));
+            var cacheData = _cacheService.GetData<List<Account>>("accounts");
 
-            return accounts;
+            if(cacheData != null && cacheData.Count() > 0)
+            {
+                return cacheData;
+            }
+
+            cacheData = await _context.Accounts.Include(a => a.AppUser).ToListAsync();
+
+            var expiryTime = DateTimeOffset.Now.AddMinutes(5);
+
+            _cacheService.SetData<List<Account>>("accounts", cacheData, expiryTime);
+
+            return cacheData;
+
+
+            //var accounts = await _cacheService.GetOrSetAsync<List<Account>>(
+            //"accountsCacheKey",
+            //async () => await _context.Accounts.Include(a => a.AppUser).ToListAsync(),
+            //TimeSpan.FromMinutes(5));
+
+            //return accounts;
         }
 
         public async Task<List<Account>> GetAccountsForAnUser(string id)

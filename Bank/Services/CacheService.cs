@@ -1,35 +1,81 @@
 ﻿using Bank.Interfaces;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using StackExchange.Redis;
+using System.Text.Json;
 
 namespace Bank.Services
 {
     public class CacheService : ICacheService
     {
-        private readonly IMemoryCache _cache;
+        private readonly IDatabase _cacheDb;
 
-        public CacheService(IMemoryCache cache)
+        public CacheService()
         {
-            _cache = cache;
+            var redis = ConnectionMultiplexer.Connect("localhost:6379");
+            _cacheDb = redis.GetDatabase();
         }
-        public async Task<T> GetOrSetAsync<T>(string cacheKey, Func<Task<T>> fetchFunction, TimeSpan? absoluteExpireTime = null, TimeSpan? unusedExpireTime = null)
+
+        public T GetData<T>(string key)
         {
-            if(!_cache.TryGetValue(cacheKey, out T cacheEntry))
+            var value = _cacheDb.StringGet(key);
+            if (!string.IsNullOrEmpty(value))
             {
-                cacheEntry = await fetchFunction();
-                var cacheEntryOptions = new MemoryCacheEntryOptions();
-
-                if (absoluteExpireTime.HasValue)
-                {
-                    cacheEntryOptions.SetAbsoluteExpiration(absoluteExpireTime.Value);
-                }
-                if (unusedExpireTime.HasValue)
-                {
-                    cacheEntryOptions.SetSlidingExpiration(unusedExpireTime.Value);
-                }
-
-                _cache.Set(cacheKey, cacheEntry, cacheEntryOptions);
+                return JsonSerializer.Deserialize<T>(value);
             }
-            return cacheEntry;
+            return default;
+                
+        }
+
+        public object RemoveData(string key)
+        {
+            var exist = _cacheDb.KeyExists(key);
+            if (exist)
+            {
+                return _cacheDb.KeyDelete(key);
+            }
+            return false;
+        }
+
+        public bool SetData<T>(string key, T value, DateTimeOffset expirationTime)
+        {
+            var expiryTime = expirationTime.DateTime.Subtract(DateTime.Now);
+           // var isSet = _cacheDb.StringSet(key, JsonSerializer.Serialize(value), expiryTime);
+            try
+            {
+                var isSet = _cacheDb.StringSet(key, JsonSerializer.Serialize(value), expiryTime);
+                Console.WriteLine($"Set operation success: {isSet}");
+                return isSet;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during Redis set operation: {ex.Message}");
+                return false;
+            }
+            //return isSet;
         }
     }
 }
+
+
+//public async Task<T> GetOrSetAsync<T>(string cacheKey, Func<Task<T>> fetchFunction, TimeSpan? absoluteExpireTime = null, TimeSpan? unusedExpireTime = null)
+//{
+//    if(!_cache.TryGetValue(cacheKey, out T cacheEntry))
+//    {
+//        cacheEntry = await fetchFunction();
+//        var cacheEntryOptions = new MemoryCacheEntryOptions();
+
+//        if (absoluteExpireTime.HasValue)
+//        {
+//            cacheEntryOptions.SetAbsoluteExpiration(absoluteExpireTime.Value);
+//        }
+//        if (unusedExpireTime.HasValue)
+//        {
+//            cacheEntryOptions.SetSlidingExpiration(unusedExpireTime.Value);
+//        }
+
+//        _cache.Set(cacheKey, cacheEntry, cacheEntryOptions);
+//    }
+//    return cacheEntry;
+//}
