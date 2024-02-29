@@ -1,10 +1,11 @@
-﻿using Bank.Data;
+﻿using Azure;
+using Bank.Data;
 using Bank.Dtos.User;
 using Bank.Interfaces;
-using Bank.Mappers;
 using Bank.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace Bank.Repositories
 {
@@ -13,17 +14,17 @@ namespace Bank.Repositories
         private readonly DataContext _context;
         private readonly IAccountRepository _accountRepo;
         private readonly UserManager<AppUser> _userManager;
-        private readonly SignInManager<AppUser> _signInManager;
         private readonly ITransactionRepository _transactionRepo;
+        private readonly HttpClient _httpClient;
 
         public UserRepository(DataContext context, IAccountRepository accountRepo, ITransactionRepository transactionRepo,
-            UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+            UserManager<AppUser> userManager, HttpClient httpClient )
         {
             _context = context;
             _accountRepo = accountRepo;
             _transactionRepo = transactionRepo;
             _userManager = userManager;
-            _signInManager = signInManager;
+            _httpClient = httpClient;
         }
 
         public async Task<AppUser> CreateUser(CreateUserDto userDto)
@@ -35,6 +36,12 @@ namespace Bank.Repositories
                 UserName = userDto.FullName.Replace(" ", ""),
                 Email = userDto.Email,
             };
+
+           if (await _context.Users.AnyAsync(user => user.Email == newUser.Email) ||
+                await _context.Users.AnyAsync(user => user.UserName == newUser.UserName))
+            {
+                throw new Exception("Email or login already in use");
+            }
 
             await _userManager.CreateAsync(newUser, userDto.Password);
 
@@ -80,6 +87,21 @@ namespace Bank.Repositories
             var users = await _context.Users.ToListAsync();
 
             return users;
+        }
+
+        public async Task<string> Login(LoginDto loginDto)
+        {
+            var loginRequest = await _httpClient.PostAsJsonAsync("https://localhost:7059/login", loginDto);
+            if (loginRequest.IsSuccessStatusCode)
+            {
+                var responseContent = await loginRequest.Content.ReadAsStringAsync();
+                return responseContent;
+            }
+            else
+            {
+                throw new HttpRequestException($"Login failed with status code: {loginRequest.StatusCode}", null, loginRequest.StatusCode);
+            }
+        
         }
 
         public async Task<AppUser> UpdateUser(string id, UpdateUserDto updateUserDto)

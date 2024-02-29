@@ -1,5 +1,6 @@
 ﻿using Bank.Dtos.User;
 using Bank.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Bank.Interfaces
 {
@@ -10,5 +11,7 @@ namespace Bank.Interfaces
         Task<AppUser> CreateUser(CreateUserDto userDto);
         Task<AppUser> UpdateUser(string id, UpdateUserDto updateUserDto);
         Task<AppUser> DeleteUser(string id);
+        Task<string> Login(LoginDto loginDto);
+
     }
 }

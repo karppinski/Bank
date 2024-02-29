@@ -10,21 +10,29 @@ namespace Bank.Repositories
     {
         private readonly DataContext _context;
         private readonly ICacheService _cacheService;
+        private readonly ILogger<AccountRepository> _logger;
 
-        public AccountRepository(DataContext context, ICacheService cacheService)
+        public AccountRepository(DataContext context, ICacheService cacheService, ILogger<AccountRepository> logger)
         {
             _context = context;
             _cacheService = cacheService;
+            _logger = logger;
         }
 
         public async Task<Account> CreateAccount(string userId)
         {
             var user = await _context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
 
-            if (user.DateOfBirth.Year - DateTime.Now.Year < 18)
+            var today = DateTime.Today;
+            var age = today.Year - user.DateOfBirth.Year;
+            
+            if (user.DateOfBirth.Date > today.AddYears(-age)) age--;
+
+            if (age < 18)
             {
                 throw new Exception("You must be over 18 years to create an account.");
             }
+
 
             var newAccount = new Account
             {
@@ -35,6 +43,7 @@ namespace Bank.Repositories
 
             _context.Accounts.Add(newAccount);
             await _context.SaveChangesAsync();
+            _logger.LogInformation($"Created account {newAccount}");
 
             return newAccount;
         }

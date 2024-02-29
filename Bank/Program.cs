@@ -21,6 +21,7 @@ namespace Bank
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddMemoryCache();
+            builder.Services.AddHttpClient();
             builder.Services.AddStackExchangeRedisCache(redisOptions =>
             {
                    redisOptions.Configuration = builder.Configuration

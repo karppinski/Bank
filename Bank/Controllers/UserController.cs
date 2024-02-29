@@ -1,6 +1,7 @@
 ﻿using Bank.Dtos.User;
 using Bank.Interfaces;
 using Bank.Mappers;
+using Bank.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,15 +15,18 @@ namespace Bank.Controllers
         private readonly ITokenService _tokenService;
         private readonly ITransactionRepository _transactionRepo;
         private readonly IAccountRepository _accountRepo;
+        private static readonly HttpClient client = new HttpClient();
+
 
         public UserController(IUserRepository userRepo, ITokenService tokenService,
             ITransactionRepository transactionRepo, IAccountRepository accountRepo)
+            
         {
             _userRepo = userRepo;
             _tokenService = tokenService;
             _transactionRepo = transactionRepo;
             _accountRepo = accountRepo;
-        }
+               }
 
 
         [HttpGet("getAll")]
@@ -91,6 +95,24 @@ namespace Bank.Controllers
 
             return NoContent();
 
+        }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        {
+            try
+            {
+                var result = await _userRepo.Login(loginDto);
+     
+                return Ok(result);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode((int)ex.StatusCode, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An unexpected error occurred.");
+            }
         }
     }
 }
