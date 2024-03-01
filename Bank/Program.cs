@@ -17,7 +17,6 @@ namespace Bank
 
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddMemoryCache();
@@ -45,15 +44,21 @@ namespace Bank
                 .AddEntityFrameworkStores<DataContext>()
       
                 .AddApiEndpoints();
-  
 
+
+            //builder.Logging.AddJsonConsole(options =>
+            //{
+            //    options.JsonWriterOptions = new()
+            //    {
+            //        Indented = true
+            //    };
+            //});
 
             var app = builder.Build();
 
 
             app.MapIdentityApi<Models.AppUser>(); 
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -64,7 +69,6 @@ namespace Bank
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
@@ -82,27 +86,8 @@ namespace Bank
                 }
             }
 
-            //using (var scope = app.Services.CreateScope())
-            //{
-            //    var userManager =
-            //        scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
-            //    string email = "admin@admin.com";
-            //    string password = "P@ssword_111";
-
-            //    if(await userManager.FindByEmailAsync(email) == null)
-            //    {
-            //        var user = new IdentityUser();
-            //        user.UserName = email;
-            //        user.Email = email;
-
-            //        await userManager.CreateAsync(user, password);
-
-            //        await userManager.AddToRoleAsync(user, "Admin");
-            //    }
-            //}
-
-                app.Run();
+            app.Run();
         }
     }
 }

@@ -40,7 +40,6 @@ namespace Bank.Services
         public bool SetData<T>(string key, T value, DateTimeOffset expirationTime)
         {
             var expiryTime = expirationTime.DateTime.Subtract(DateTime.Now);
-           // var isSet = _cacheDb.StringSet(key, JsonSerializer.Serialize(value), expiryTime);
             try
             {
                 var isSet = _cacheDb.StringSet(key, JsonSerializer.Serialize(value), expiryTime);
@@ -53,12 +52,11 @@ namespace Bank.Services
                 Console.WriteLine($"Error during Redis set operation: {ex.Message}");
                 return false;
             }
-            //return isSet;
         }
     }
 }
 
-
+// in memory cache method
 //public async Task<T> GetOrSetAsync<T>(string cacheKey, Func<Task<T>> fetchFunction, TimeSpan? absoluteExpireTime = null, TimeSpan? unusedExpireTime = null)
 //{
 //    if(!_cache.TryGetValue(cacheKey, out T cacheEntry))

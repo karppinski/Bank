@@ -43,7 +43,7 @@ namespace Bank.Repositories
 
             _context.Accounts.Add(newAccount);
             await _context.SaveChangesAsync();
-            _logger.LogInformation($"Created account {newAccount}");
+            _logger.LogInformation("Created account for {Name} with Id: {id}", newAccount.AppUser.UserName, newAccount.AccountId);
 
             return newAccount;
         }
@@ -90,7 +90,7 @@ namespace Bank.Repositories
 
             return cacheData;
 
-
+            // in memory cache
             //var accounts = await _cacheService.GetOrSetAsync<List<Account>>(
             //"accountsCacheKey",
             //async () => await _context.Accounts.Include(a => a.AppUser).ToListAsync(),

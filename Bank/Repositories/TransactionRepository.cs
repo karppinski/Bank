@@ -99,7 +99,7 @@ namespace Bank.Repositories
         {
             var transaction = await _context.Transactions.Include(t => t.Account)
                                                           .FirstOrDefaultAsync(t => t.TransactionId == transactionId);
-            if (transaction == null) throw new Exception("Transaction not found");//account jest tutaj nullem
+            if (transaction == null) throw new Exception("Transaction not found");
 
             return transaction;
         }

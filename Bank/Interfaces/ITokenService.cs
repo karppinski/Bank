@@ -9,7 +9,6 @@ namespace Bank.Interfaces
         Task<bool> UserCanAccessAccount(ClaimsPrincipal user, int id);
         bool UserCanAccessUser(ClaimsPrincipal user, string userIdFromRoute);
         Task<bool> UserCanAccesTransaction(ClaimsPrincipal user, int id);
-     //   Task<string> CreateToken(AppUser user);
 
     }
 }
