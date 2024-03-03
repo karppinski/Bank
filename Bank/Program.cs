@@ -6,6 +6,7 @@ using Bank.Repositories;
 using Bank.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Bank
 {
@@ -45,6 +46,11 @@ namespace Bank
       
                 .AddApiEndpoints();
 
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Configuration).CreateLogger();
+
+           // builder.Host.UseSerilog();
+
 
             //builder.Logging.AddJsonConsole(options =>
             //{
@@ -65,6 +71,7 @@ namespace Bank
                 app.UseSwaggerUI();
             }
 
+           // app.UseSerilogRequestLogging();
 
             app.UseHttpsRedirection();
 

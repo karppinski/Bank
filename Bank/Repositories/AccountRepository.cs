@@ -3,6 +3,7 @@ using Bank.Dtos.Account;
 using Bank.Interfaces;
 using Bank.Models;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Bank.Repositories
 {
@@ -43,7 +44,8 @@ namespace Bank.Repositories
 
             _context.Accounts.Add(newAccount);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Created account for {Name} with Id: {id}", newAccount.AppUser.UserName, newAccount.AccountId);
+            //  _logger.LogInformation("Created account for {Name} with Id: {id}", newAccount.AppUser.UserName, newAccount.AccountId);
+            Log.Information("Created new account for {Name} with Id: {id}", newAccount.AppUser.UserName, newAccount.AccountId);
 
             return newAccount;
         }
